@@ -104,6 +104,8 @@ class MenuItem {
         cout<<"Available: "<<isAvailable<<endl;
     }
     friend class Restaurant; // Allow Restaurant class to access private members of MenuItem
+    friend class Cart; 
+
 };
 
 
@@ -144,5 +146,51 @@ class Restaurant {
         for(int i=0;i<menuCount;i++) {
             menu[i].get();
         }
+    }
+};
+class Cart {
+private:
+    MenuItem items[100];
+    int count;
+
+public:
+    Cart() {
+        count = 0;
+    }
+
+    void addItem(MenuItem m) {
+        items[count] = m;
+        count++;
+        cout<<"Item added to cart\n";
+    }
+
+    void removeItem(int id) {
+        for(int i=0;i<count;i++) {
+            if(items[i].Itemid == id) {
+                for(int j=i;j<count-1;j++) {
+                    items[j] = items[j+1];
+                }
+                count--;
+                cout<<"Item removed from cart\n";
+                return;
+            }
+        }
+        cout<<"Item not found in cart\n";
+    }
+
+    float calculateTotal() {
+        float total = 0;
+        for(int i=0;i<count;i++) {
+            total += items[i].price;
+        }
+        return total;
+    }
+
+    void displayCart() {
+        cout<<"Cart Items:\n";
+        for(int i=0;i<count;i++) {
+            items[i].get();
+        }
+        cout<<"Total Price: "<<calculateTotal()<<endl;
     }
 };
