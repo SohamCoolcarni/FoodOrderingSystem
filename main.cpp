@@ -194,3 +194,29 @@ public:
         cout<<"Total Price: "<<calculateTotal()<<endl;
     }
 };
+
+class Order {
+private:
+    int orderId;
+    string status;
+    Cart cart;
+
+public:
+    Order(int id, Cart c) {
+        orderId = id;
+        cart = c;
+        status = "Placed";
+        cout<<"Order created\n";
+    }
+
+    void updateStatus(string s) {
+        status = s;
+        cout<<"Order status updated to: "<<status<<endl;
+    }
+
+    void showOrder() {
+        cout<<"Order ID: "<<orderId<<endl;
+        cout<<"Status: "<<status<<endl;
+        cart.displayCart();
+    }
+};
