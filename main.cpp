@@ -1,6 +1,11 @@
 #include<iostream>
 using namespace std;
 
+class MenuItem;
+class Restaurant;
+class Cart;
+class Order;
+
 class User {
     private:
     bool islogin;
@@ -8,12 +13,8 @@ class User {
     string name,email,password;
     string phone;
     public:
-    User(int id,string nm,string em,string pass,string ph) {
-        Userid=id;
-        name=nm;
-        email=em;
-        password=pass;
-        phone=ph;
+    User(int id,string nm,string em,string pass,string ph)
+        : islogin(false), Userid(id), name(nm), email(em), password(pass), phone(ph) {
         cout<<"User obj created\n";
     }
     void get() {
@@ -30,7 +31,7 @@ class User {
     void login() {
         int check;
         string pass;
-        cout<<"Enter the User id and password\n"<<"Id: ";
+        cout<<"Enter the User id and password\nId: ";
         cin>>check;
         cout<<"Password: ";
         cin>>pass;
@@ -59,19 +60,6 @@ class User {
         }
     }
 };
-
-class Customer: public User {
-    private:
-    string address;
-    string cart[100]; // Assuming a maximum of 100 items in the cart
-    string orderHistory[100]; // Assuming a maximum of 100 past orders
-    public:
-    Customer(int id,string nm,string em,string pass,string ph,string add):User(id,nm,em,pass,ph) {
-        address=add;
-        cout<<"Customer obj created\n";
-    }
-};
-
 
 class MenuItem {
     private:
@@ -107,11 +95,6 @@ class MenuItem {
         cout<<"Available: "<<isAvailable<<endl;
     }
 
-
-    void displayDetails() {
-        get();   // reuse your existing function
-    }
-
     void updatePrice(float newPrice) {
         price = newPrice;
         cout<<"Price updated successfully\n";
@@ -131,7 +114,6 @@ class MenuItem {
     friend class Cart;
 };
 
-
 class Restaurant {
     private:
     int Restaurantid;
@@ -142,13 +124,8 @@ class Restaurant {
     bool isOpen;
 
     public:
-    Restaurant(int id,string nm,string add,float ra,int n,bool y) {
-        Restaurantid=id;
-        name=nm;
-        address=add;
-        rating=ra;
-        menuCount=n;
-        isOpen=y;
+    Restaurant(int id,string nm,string add,float ra,int n,bool y)
+        : Restaurantid(id), name(nm), address(add), rating(ra), menuCount(n), isOpen(y) {
         cout<<"Restaurant obj created\n";
     }
 
@@ -172,8 +149,6 @@ class Restaurant {
             menu[i].get();
         }
     }
-
-    // ✅ ADDED FUNCTIONS
 
     void removeMenuItem(int id) {
         for(int i=0;i<menuCount;i++) {
@@ -216,14 +191,16 @@ class Restaurant {
     }
 
     float getAverageRating() {
-        return rating;   // simple version (since only one rating stored)
+        return rating;
     }
+    friend class Customer;
+    friend class Owner;
 };
 
 class Cart {
 private:
     MenuItem items[100];
-    int quantity[100];   // to store quantity of each item
+    int quantity[100];
     int count;
 
 public:
@@ -232,7 +209,6 @@ public:
     }
 
     void addItem(MenuItem m) {
-        // check if item already exists
         for(int i=0;i<count;i++) {
             if(items[i].Itemid == m.Itemid) {
                 quantity[i]++;
@@ -240,7 +216,6 @@ public:
                 return;
             }
         }
-
         items[count] = m;
         quantity[count] = 1;
         count++;
@@ -302,10 +277,20 @@ private:
     string status;
     Cart cart;
     string deliveryPerson;
-    int deliveryTime;   // in minutes
+    int deliveryTime;
 
 public:
-    Order(int id, Cart c) {
+    Order() : orderId(0), status("Created"), deliveryPerson("Not Assigned"), deliveryTime(0) {}
+
+    Order(int id, const Cart &c) : orderId(id), cart(c), status("Created"), deliveryPerson("Not Assigned"), deliveryTime(0) {
+        cout<<"Order object created\n";
+    }
+
+    int getOrderId() const {
+        return orderId;
+    }
+
+    void get(int id, Cart c) {
         orderId = id;
         cart = c;
         status = "Created";
@@ -335,7 +320,7 @@ public:
     }
 
     void calculateDeliveryTime() {
-        deliveryTime = 30;   // fixed for now
+        deliveryTime = 30;
         cout<<"Estimated delivery time: "<<deliveryTime<<" minutes\n";
     }
 
@@ -346,63 +331,134 @@ public:
         cout<<"Delivery Time: "<<deliveryTime<<" minutes"<<endl;
         cart.displayCart();
     }
+    friend DeliveryPerson;
 };
 
-// base class for payment
-class Payment {
-public:
-    // pure virtual function
-    virtual void processPayment(float amount) = 0;
+class Customer: public User {
+    private:
+    string address;
+    Cart cart;
+    Order orderHistory[100];
+    int orderCount;
 
-    void validatePayment() {
-        cout<<"payment validated\n";
+    public:
+    Customer(int id, string nm, string em, string pass, string ph, string addr)
+        : User(id, nm, em, pass, ph), address(addr), orderCount(0) {
+        cout<<"Customer obj created\n";
     }
 
-    void generateReceipt(float amount) {
-        cout<<"receipt generated for amount: "<<amount<<endl;
+    void browseRestaurants(Restaurant restaurants[], int count) {
+        cout<<"Browsing restaurants...\n";
+        for(int i=0; i<count; i++) {
+            cout<<"Restaurant ID: "<<restaurants[i].Restaurantid<<endl;
+            cout<<"Name: "<<restaurants[i].name<<endl;
+            cout<<"Address: "<<restaurants[i].address<<endl;
+            cout<<"Rating: "<<restaurants[i].rating<<endl;
+            cout<<"-------------------------\n";
+        }
+    }
+
+    void addToCart(MenuItem item) {
+        cart.addItem(item);
+    }
+
+    void placeOrder() {
+        if(cart.calculateTotal() == 0) {
+            cout<<"Cart is empty. Please add items to cart before placing an order.\n";
+            return;
+        }
+
+        int nextId = orderCount + 1;
+        Order newOrder(nextId, cart);
+        newOrder.placeOrder();
+        if(orderCount < 100) {
+            orderHistory[orderCount++] = newOrder;
+        }
+        cart.clearCart();
+    }
+
+    void viewOrderHistory() {
+        cout<<"Order History:\n";
+        for(int i=0; i<orderCount; i++) {
+            orderHistory[i].displayOrderDetails();
+            cout<<"-------------------------\n";
+        }
+    }
+};
+
+class DeliveryPerson: public User {
+    private:
+    bool isAvailable;
+    Order assignedOrders[100];
+    int assignedCount;
+
+    public:
+    DeliveryPerson(int id, string nm, string em, string pass, string ph)
+        : User(id, nm, em, pass, ph), isAvailable(true), assignedCount(0) {}
+
+    void acceptOrder(const Order &o) {
+        if(assignedCount < 100) {
+            assignedOrders[assignedCount++] = o;
+            isAvailable = false;
+        }
+    }
+
+    void updateOrderStatus(int orderId, string status) {
+        for(int i=0; i<assignedCount; i++) {
+            if(assignedOrders[i].orderId == orderId) {
+                assignedOrders[i].updateStatus(status);
+                return;
+            }
+        }
+        cout<<"Order not found\n";
+    }
+
+    void markDelivered(const Order &o) {
+        for(int i=0; i<assignedCount; i++) {
+            if(assignedOrders[i].orderId == o.orderId) {
+                assignedOrders[i].updateStatus("Delivered");
+                isAvailable = true;
+                return;
+            }
+        }
+        cout<<"Order not found\n";
     }
 };
 
-// credit card payment
-class CreditCard : public Payment {
-public:
-    void processPayment(float amount) {
-        cout<<"processing credit card payment of "<<amount<<endl;
-        validateCard();
-        validatePayment();
-        generateReceipt(amount);
+class Owner: public User {
+    private:
+    Restaurant ownedRestaurant[100];
+    int ownedRestaurantCount;
+    string address;
+
+    public:
+    Owner(int id, string nm, string em, string pass, string ph, string addr)
+        : User(id, nm, em, pass, ph), ownedRestaurantCount(0), address(addr) {
+            cout<<"Owner obj. created\n";
+        }
+
+    void addRestaurant(const Restaurant &r) {
+        if(ownedRestaurantCount < 100) {
+            ownedRestaurant[ownedRestaurantCount++] = r;
+        }
     }
 
-    void validateCard() {
-        cout<<"card details checked\n";
+    void addMenuItem(Restaurant *r, MenuItem m) {
+        if(r) {
+            r->addMenuItem(m);
+            cout<<"Menu item added to restaurant\n";
+        }
+    }
+
+    void viewAllOrders() {
+        cout<<"Viewing all orders for owned restaurants...\n";
+        for(int i=0; i<ownedRestaurantCount; i++) {
+            cout<<"Orders for Restaurant: "<<ownedRestaurant[i].name<<"\n";
+            cout<<"-------------------------\n";
+        }
     }
 };
 
-// upi payment
-class UPI : public Payment {
-public:
-    void processPayment(float amount) {
-        cout<<"processing upi payment of "<<amount<<endl;
-        validateUPI();
-        validatePayment();
-        generateReceipt(amount);
-    }
-
-    void validateUPI() {
-        cout<<"upi id verified\n";
-    }
-};
-
-// cash on delivery
-class COD : public Payment {
-public:
-    void processPayment(float amount) {
-        cout<<"cash on delivery selected, amount: "<<amount<<endl;
-        confirmCOD();
-        generateReceipt(amount);
-    }
-
-    void confirmCOD() {
-        cout<<"order will be paid at delivery\n";
-    }
-};
+int main() {
+    return 0;
+}
