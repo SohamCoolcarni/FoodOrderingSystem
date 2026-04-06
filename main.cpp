@@ -137,9 +137,10 @@ class Restaurant {
     int Restaurantid;
     string name,address;
     float rating;
-    MenuItem menu[100]; // Assuming a maximum of 100 menu items
+    MenuItem menu[100];
     int menuCount;
     bool isOpen;
+
     public:
     Restaurant(int id,string nm,string add,float ra,int n,bool y) {
         Restaurantid=id;
@@ -150,24 +151,72 @@ class Restaurant {
         isOpen=y;
         cout<<"Restaurant obj created\n";
     }
+
     void addMenuItem(MenuItem m) {
         for(int i=0;i<menuCount;i++) {
             if(menu[i].Itemid==m.Itemid) {
                 cout<<"Item with this id already exists. Please enter a unique item id.\n";
                 return;
             }
-            else if(menu[i].Itemid==0) { // Assuming 0 indicates an empty slot in the menu array
-                menu[i]=m;cout<<"Menu item added successfully."<<endl;
+            else if(menu[i].Itemid==0) {
+                menu[i]=m;
+                cout<<"Menu item added successfully."<<endl;
                 break;
             }
         }
-        
     }
+
     void displayMenu() {
         cout<<"Menu for Restaurant: "<<name<<"\n";
         for(int i=0;i<menuCount;i++) {
             menu[i].get();
         }
+    }
+
+    // ✅ ADDED FUNCTIONS
+
+    void removeMenuItem(int id) {
+        for(int i=0;i<menuCount;i++) {
+            if(menu[i].Itemid == id) {
+                for(int j=i;j<menuCount-1;j++) {
+                    menu[j] = menu[j+1];
+                }
+                menuCount--;
+                cout<<"Menu item removed\n";
+                return;
+            }
+        }
+        cout<<"Item not found\n";
+    }
+
+    void updateMenuItem(int id, float newPrice) {
+        for(int i=0;i<menuCount;i++) {
+            if(menu[i].Itemid == id) {
+                menu[i].updatePrice(newPrice);
+                return;
+            }
+        }
+        cout<<"Item not found\n";
+    }
+
+    void searchMenuItem(int id) {
+        for(int i=0;i<menuCount;i++) {
+            if(menu[i].Itemid == id) {
+                cout<<"Item found:\n";
+                menu[i].get();
+                return;
+            }
+        }
+        cout<<"Item not found\n";
+    }
+
+    void toggleOpen() {
+        isOpen = !isOpen;
+        cout<<"Restaurant is now "<<(isOpen ? "Open" : "Closed")<<endl;
+    }
+
+    float getAverageRating() {
+        return rating;   // simple version (since only one rating stored)
     }
 };
 
