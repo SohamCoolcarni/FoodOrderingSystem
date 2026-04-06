@@ -80,14 +80,16 @@ class MenuItem {
     float price;
     string catagory;
     bool isAvailable;
+
     public:
-    MenuItem() {//initializing as default constructor as restaurant needs to create menu items without details and then update them later
+    MenuItem() {
         Itemid=0;
         name="";
         price=0;
         catagory="";
         isAvailable=false;
     }
+
     void enterItemDetails(int item,string in,string cat,float p,bool a) {
         Itemid=item;
         name=in;
@@ -96,6 +98,7 @@ class MenuItem {
         isAvailable=a;
         cout<<"MenuItem obj created\n";
     }
+
     void get() {
         cout<<"Itemid: "<<Itemid<<endl;
         cout<<"Name: "<<name<<endl;
@@ -103,11 +106,30 @@ class MenuItem {
         cout<<"Price: "<<price<<endl;
         cout<<"Available: "<<isAvailable<<endl;
     }
-    friend class Restaurant; // Allow Restaurant class to access private members of MenuItem
-    friend class Cart; 
 
+
+    void displayDetails() {
+        get();   // reuse your existing function
+    }
+
+    void updatePrice(float newPrice) {
+        price = newPrice;
+        cout<<"Price updated successfully\n";
+    }
+
+    void toggleAvailability() {
+        isAvailable = !isAvailable;
+        cout<<"Availability changed\n";
+    }
+
+    void applyDiscount(float percent) {
+        price = price - (price * percent / 100);
+        cout<<"Discount applied. New price: "<<price<<endl;
+    }
+
+    friend class Restaurant;
+    friend class Cart;
 };
-
 
 
 class Restaurant {
