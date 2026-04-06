@@ -148,9 +148,11 @@ class Restaurant {
         }
     }
 };
+
 class Cart {
 private:
     MenuItem items[100];
+    int quantity[100];   // to store quantity of each item
     int count;
 
 public:
@@ -159,7 +161,17 @@ public:
     }
 
     void addItem(MenuItem m) {
+        // check if item already exists
+        for(int i=0;i<count;i++) {
+            if(items[i].Itemid == m.Itemid) {
+                quantity[i]++;
+                cout<<"Item quantity increased\n";
+                return;
+            }
+        }
+
         items[count] = m;
+        quantity[count] = 1;
         count++;
         cout<<"Item added to cart\n";
     }
@@ -169,6 +181,7 @@ public:
             if(items[i].Itemid == id) {
                 for(int j=i;j<count-1;j++) {
                     items[j] = items[j+1];
+                    quantity[j] = quantity[j+1];
                 }
                 count--;
                 cout<<"Item removed from cart\n";
@@ -178,18 +191,35 @@ public:
         cout<<"Item not found in cart\n";
     }
 
+    void updateQuantity(int id, int q) {
+        for(int i=0;i<count;i++) {
+            if(items[i].Itemid == id) {
+                quantity[i] = q;
+                cout<<"Quantity updated\n";
+                return;
+            }
+        }
+        cout<<"Item not found in cart\n";
+    }
+
     float calculateTotal() {
         float total = 0;
         for(int i=0;i<count;i++) {
-            total += items[i].price;
+            total += items[i].price * quantity[i];
         }
         return total;
+    }
+
+    void clearCart() {
+        count = 0;
+        cout<<"Cart cleared\n";
     }
 
     void displayCart() {
         cout<<"Cart Items:\n";
         for(int i=0;i<count;i++) {
             items[i].get();
+            cout<<"Quantity: "<<quantity[i]<<endl;
         }
         cout<<"Total Price: "<<calculateTotal()<<endl;
     }
@@ -200,13 +230,22 @@ private:
     int orderId;
     string status;
     Cart cart;
+    string deliveryPerson;
+    int deliveryTime;   // in minutes
 
 public:
     Order(int id, Cart c) {
         orderId = id;
         cart = c;
+        status = "Created";
+        deliveryPerson = "Not Assigned";
+        deliveryTime = 0;
+        cout<<"Order object created\n";
+    }
+
+    void placeOrder() {
         status = "Placed";
-        cout<<"Order created\n";
+        cout<<"Order placed successfully\n";
     }
 
     void updateStatus(string s) {
@@ -214,9 +253,26 @@ public:
         cout<<"Order status updated to: "<<status<<endl;
     }
 
-    void showOrder() {
+    void cancelOrder() {
+        status = "Cancelled";
+        cout<<"Order cancelled\n";
+    }
+
+    void assignDeliveryPerson(string name) {
+        deliveryPerson = name;
+        cout<<"Delivery person assigned: "<<deliveryPerson<<endl;
+    }
+
+    void calculateDeliveryTime() {
+        deliveryTime = 30;   // fixed for now
+        cout<<"Estimated delivery time: "<<deliveryTime<<" minutes\n";
+    }
+
+    void displayOrderDetails() {
         cout<<"Order ID: "<<orderId<<endl;
         cout<<"Status: "<<status<<endl;
+        cout<<"Delivery Person: "<<deliveryPerson<<endl;
+        cout<<"Delivery Time: "<<deliveryTime<<" minutes"<<endl;
         cart.displayCart();
     }
 };
