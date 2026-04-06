@@ -347,3 +347,62 @@ public:
         cart.displayCart();
     }
 };
+
+// base class for payment
+class Payment {
+public:
+    // pure virtual function
+    virtual void processPayment(float amount) = 0;
+
+    void validatePayment() {
+        cout<<"payment validated\n";
+    }
+
+    void generateReceipt(float amount) {
+        cout<<"receipt generated for amount: "<<amount<<endl;
+    }
+};
+
+// credit card payment
+class CreditCard : public Payment {
+public:
+    void processPayment(float amount) {
+        cout<<"processing credit card payment of "<<amount<<endl;
+        validateCard();
+        validatePayment();
+        generateReceipt(amount);
+    }
+
+    void validateCard() {
+        cout<<"card details checked\n";
+    }
+};
+
+// upi payment
+class UPI : public Payment {
+public:
+    void processPayment(float amount) {
+        cout<<"processing upi payment of "<<amount<<endl;
+        validateUPI();
+        validatePayment();
+        generateReceipt(amount);
+    }
+
+    void validateUPI() {
+        cout<<"upi id verified\n";
+    }
+};
+
+// cash on delivery
+class COD : public Payment {
+public:
+    void processPayment(float amount) {
+        cout<<"cash on delivery selected, amount: "<<amount<<endl;
+        confirmCOD();
+        generateReceipt(amount);
+    }
+
+    void confirmCOD() {
+        cout<<"order will be paid at delivery\n";
+    }
+};
