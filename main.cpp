@@ -1,5 +1,7 @@
 #include<iostream>
 #include<string>
+#include<fstream>
+#include<sstream>
 using namespace std;
 
 class User {
@@ -451,6 +453,9 @@ class Customer : public User {
             orderHistory[i].displayOrderDetails();
         }
     }
+
+    friend void saveCustomers(const Customer[]);
+    friend void loadCustomers(Customer[]);
 };
 
 class Owner : public User {
@@ -487,6 +492,9 @@ class Owner : public User {
     void viewAllOrders() {
         cout << "Viewing all orders (feature coming soon)\n";
     }
+
+    friend void saveOwners(const Owner[]);
+    friend void loadOwners(Owner[]);
 };
 
 class DeliveryPerson : public User {
@@ -529,6 +537,9 @@ class DeliveryPerson : public User {
     void viewAssignedOrders() {
         cout << "Viewing assigned orders (feature coming soon)\n";
     }
+
+    friend void saveDeliveryPersons(const DeliveryPerson[]);
+    friend void loadDeliveryPersons(DeliveryPerson[]);
 };
 
 // Base class for payment
@@ -598,7 +609,109 @@ Customer customers[100];
 Owner owners[100];
 DeliveryPerson deliveryPersons[100];
 
+void saveCustomers(const Customer customers[]) {
+    ofstream file("customers.txt");
+    if (!file) return;
+    for (int i = 0; i < 100; i++) {
+        if (customers[i].Userid != 0) {
+            file << customers[i].Userid << "," << customers[i].name << "," << customers[i].email << ","
+                 << customers[i].password << "," << customers[i].phone << "," << customers[i].address << endl;
+        }
+    }
+    file.close();
+}
+
+void loadCustomers(Customer customers[]) {
+    ifstream file("customers.txt");
+    if (!file) return;
+    string line;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string idStr, name, email, pass, phone, addr;
+        getline(ss, idStr, ',');
+        getline(ss, name, ',');
+        getline(ss, email, ',');
+        getline(ss, pass, ',');
+        getline(ss, phone, ',');
+        getline(ss, addr);
+        int id = stoi(idStr);
+        if(id >= 0 && id < 100) {
+            customers[id] = Customer(id, name, email, pass, phone, addr);
+        }
+    }
+    file.close();
+}
+
+void saveOwners(const Owner owners[]) {
+    ofstream file("owners.txt");
+    if (!file) return;
+    for (int i = 0; i < 100; i++) {
+        if (owners[i].Userid != 0) {
+            file << owners[i].Userid << "," << owners[i].name << "," << owners[i].email << ","
+                 << owners[i].password << "," << owners[i].phone << endl;
+        }
+    }
+    file.close();
+}
+
+void loadOwners(Owner owners[]) {
+    ifstream file("owners.txt");
+    if (!file) return;
+    string line;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string idStr, name, email, pass, phone;
+        getline(ss, idStr, ',');
+        getline(ss, name, ',');
+        getline(ss, email, ',');
+        getline(ss, pass, ',');
+        getline(ss, phone);
+        int id = stoi(idStr);
+        if(id >= 0 && id < 100) {
+            owners[id] = Owner(id, name, email, pass, phone, "");
+        }
+    }
+    file.close();
+}
+
+void saveDeliveryPersons(const DeliveryPerson deliveryPersons[]) {
+    ofstream file("delivery_persons.txt");
+    if (!file) return;
+    for (int i = 0; i < 100; i++) {
+        if (deliveryPersons[i].Userid != 0) {
+            file << deliveryPersons[i].Userid << "," << deliveryPersons[i].name << "," << deliveryPersons[i].email << ","
+                 << deliveryPersons[i].password << "," << deliveryPersons[i].phone << endl;
+        }
+    }
+    file.close();
+}
+
+void loadDeliveryPersons(DeliveryPerson deliveryPersons[]) {
+    ifstream file("delivery_persons.txt");
+    if (!file) return;
+    string line;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string idStr, name, email, pass, phone;
+        getline(ss, idStr, ',');
+        getline(ss, name, ',');
+        getline(ss, email, ',');
+        getline(ss, pass, ',');
+        getline(ss, phone);
+        int id = stoi(idStr);
+        if(id >= 0 && id < 100) {
+            deliveryPersons[id] = DeliveryPerson(id, name, email, pass, phone);
+        }
+    }
+    file.close();
+}
+
 int main() {
+    // Load data from files
+    loadCustomers(customers);
+    loadOwners(owners);
+    loadDeliveryPersons(deliveryPersons);
+
     int choice;
 
     while(true) {
@@ -901,6 +1014,10 @@ int main() {
 
             case 5:
                 cout << "Exiting... Thank you for using FoodFast!\n";
+                // Save data to files
+                saveCustomers(customers);
+                saveOwners(owners);
+                saveDeliveryPersons(deliveryPersons);
                 return 0;
 
             default:
